@@ -1,16 +1,17 @@
 import * as cdk from 'aws-cdk-lib';
 import { Construct } from 'constructs';
-// import * as sqs from 'aws-cdk-lib/aws-sqs';
+import { CDKContext } from '../types';
+
 
 export class BackendStack extends cdk.Stack {
-  constructor(scope: Construct, id: string, props?: cdk.StackProps) {
-    super(scope, id, props);
 
-    // The code that defines your stack goes here
+    constructor(scope: Construct, id: string, props: cdk.StackProps, context: CDKContext){
+        super(scope, id, props);
 
-    // example resource
-    // const queue = new sqs.Queue(this, 'BackendQueue', {
-    //   visibilityTimeout: cdk.Duration.seconds(300)
-    // });
-  }
+        const appName = `${context.appName}-${context.stage}`;
+        console.log(`AppName -> ${appName}`)
+
+
+    }
+
 }
