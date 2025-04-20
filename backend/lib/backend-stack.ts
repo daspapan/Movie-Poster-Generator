@@ -28,6 +28,7 @@ export class BackendStack extends cdk.Stack {
         // NodejsFunction & LambdaFunction
         const computeStack = createFunctions(this, {
             appName: appName,
+            stageName: context.stage
         }); 
 
 
@@ -48,7 +49,7 @@ export class BackendStack extends cdk.Stack {
         new cdk.CfnOutput(this, 'BucketName', {value: bucket.bucketName})
         // API Endpoint
         new cdk.CfnOutput(this, 'ApiUrl', {value: api.api.url})
-        new cdk.CfnOutput(this, 'ApiKeyId', {value: api.apiKey.keyId})
+        // new cdk.CfnOutput(this, 'ApiKeyId', {value: api.apiKey.keyId})
 
 
     }

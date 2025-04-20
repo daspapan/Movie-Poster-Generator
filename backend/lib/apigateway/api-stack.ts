@@ -23,10 +23,10 @@ export function createAPIGateway(scope: Construct, props: APIGatewayProps) {
             allowHeaders: ['*'],
             allowCredentials: true,
         },
-        apiKeySourceType: ApiKeySourceType.HEADER  
+        // apiKeySourceType: ApiKeySourceType.HEADER  
     });
 
-    const apiKey = new ApiKey(scope, `${props.appName}-ApiKey`)
+    const apiKey = ""; //new ApiKey(scope, `${props.appName}-ApiKey`)
 
 
     const pingResource = api.root.addResource('ping')

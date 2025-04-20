@@ -1,8 +1,7 @@
 {
   "MPG-Prod-Stack": {
-    "BucketName": "mpg-prod-stack-mpgprods3bucket0ad81b89-misfjxfgu2pi",
-    "ApiUrl": "https://yukv18e98e.execute-api.ap-south-1.amazonaws.com/prod/",
-    "ApiKeyId": "j1q8t9bix9",
-    "MPGProdAPIEndpointB54F2181": "https://yukv18e98e.execute-api.ap-south-1.amazonaws.com/prod/"
+    "BucketName": "mpg-prod-stack-mpgprods3bucket0ad81b89-sq64tcnqqesw",
+    "ApiUrl": "https://1vvfdttcsg.execute-api.ap-south-1.amazonaws.com/prod/",
+    "MPGProdAPIEndpointB54F2181": "https://1vvfdttcsg.execute-api.ap-south-1.amazonaws.com/prod/"
   }
 }
