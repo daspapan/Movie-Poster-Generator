@@ -7,6 +7,9 @@ type APIGatewayProps = {
     appName: string;
     stageName: string;
     pingLambdaIntegration: LambdaIntegration;
+    generatePosterLambdaIntegration: LambdaIntegration;
+    imageUploadHandlerLambdaIntegration: LambdaIntegration;
+    imagePreSignHandlerLambdaIntegration: LambdaIntegration;
 }
 
 export function createAPIGateway(scope: Construct, props: APIGatewayProps) {
@@ -31,6 +34,15 @@ export function createAPIGateway(scope: Construct, props: APIGatewayProps) {
 
     const pingResource = api.root.addResource('ping')
     pingResource.addMethod('GET', props.pingLambdaIntegration);
+
+    const generateResource = api.root.addResource('generate')
+    generateResource.addMethod('POST', props.generatePosterLambdaIntegration)
+
+    const imgUploadResource = api.root.addResource('images');
+    const upload = imgUploadResource.addResource('upload')
+    upload.addMethod('POST', props.imageUploadHandlerLambdaIntegration)
+    const view = imgUploadResource.addResource('view')
+    view.addMethod('GET', props.imagePreSignHandlerLambdaIntegration)
 
     return {api, apiKey}
     

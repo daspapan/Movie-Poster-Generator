@@ -1,10 +1,10 @@
 import { Construct } from 'constructs';
 import * as s3 from 'aws-cdk-lib/aws-s3'
-import * as iam from 'aws-cdk-lib/aws-iam'
+import * as iam from 'aws-cdk-lib/aws-iam';
+import * as cdk from 'aws-cdk-lib';
 
 type CreateImagesBucketProps = {
     appName: string
-    authenticatedRole: iam.IRole
 }
 
 export function createImagesBucket(
@@ -12,41 +12,71 @@ export function createImagesBucket(
 	props: CreateImagesBucketProps
 ) {
 	const fileStorageBucket = new s3.Bucket(scope, `${props.appName}-S3Bucket`, {
+		publicReadAccess: true,
+		// encryption: s3.BucketEncryption.S3_MANAGED,
+		blockPublicAccess: new s3.BlockPublicAccess({
+            blockPublicAcls: false,
+            blockPublicPolicy: false,
+            ignorePublicAcls: false,
+            restrictPublicBuckets: false
+		}),
+		objectOwnership: s3.ObjectOwnership.BUCKET_OWNER_ENFORCED,
+		versioned: true,
 		cors: [
 			{
+				allowedHeaders: ['*'],
 				allowedMethods: [
-					s3.HttpMethods.POST,
-					s3.HttpMethods.PUT,
 					s3.HttpMethods.GET,
-					s3.HttpMethods.DELETE,
-					s3.HttpMethods.HEAD,
 				],
 				allowedOrigins: ['*'],
-				allowedHeaders: ['*'],
-				exposedHeaders: [
-					'x-amz-server-side-encryption',
-					'x-amz-request-id',
-					'x-amz-id-2',
-					'ETag',
-				],
+				exposedHeaders: [],
+				maxAge: 3000,
 			},
 		],
+		removalPolicy: cdk.RemovalPolicy.DESTROY,
+		autoDeleteObjects: true,
 	})
 
-	// Let signed in users Upload on their own objects in a protected directory
-	const canUpdateAndReadFromOwnProtectedDirectory = new iam.PolicyStatement({
-		effect: iam.Effect.ALLOW,
-		actions: ['s3:PutObject', 's3:GetObject'],
-		resources: [
-			`arn:aws:s3:::${fileStorageBucket.bucketName}/protected/\${cognito-identity.amazonaws.com:sub}/*`,
-		],
-	})
-
-	new iam.ManagedPolicy(scope, 'SignedInUserManagedPolicy-test', {
-		description: 'managed Policy to allow upload access to s3 bucket by signed in users.',
-		statements: [canUpdateAndReadFromOwnProtectedDirectory],
-		roles: [props.authenticatedRole],
-	})
 
 	return fileStorageBucket
+}
+
+export function createImgUploadBucket(
+	scope: Construct,
+	props: CreateImagesBucketProps
+) {
+	/* const fileStorageBucket = new s3.Bucket(scope, `${props.appName}-ImgUploader-S3Bucket`, {
+		publicReadAccess: false,
+		blockPublicAccess: s3.BlockPublicAccess.BLOCK_ALL,
+		removalPolicy: cdk.RemovalPolicy.DESTROY,
+		autoDeleteObjects: true,
+	}) */
+
+	// S3 Bucket
+    const mediaBucket = new s3.Bucket(scope, `${props.appName}-MediaBucket`, {
+		removalPolicy: cdk.RemovalPolicy.DESTROY,
+		autoDeleteObjects: true,
+		cors: [{
+			allowedMethods: [
+				s3.HttpMethods.GET,
+				s3.HttpMethods.PUT,
+				s3.HttpMethods.POST
+			],
+			allowedOrigins: ['*'],
+			allowedHeaders: ['*']
+		}]
+	});
+  
+	// Lambda Role with S3 Access
+	const lambdaRole = new iam.Role(scope, `${props.appName}-LambdaS3AccessRole`, {
+		assumedBy: new iam.ServicePrincipal('lambda.amazonaws.com')
+	});
+  
+	lambdaRole.addManagedPolicy(
+		iam.ManagedPolicy.fromAwsManagedPolicyName('service-role/AWSLambdaBasicExecutionRole')
+	);
+  
+	mediaBucket.grantReadWrite(lambdaRole);
+
+	return {mediaBucket, lambdaRole}
 }
