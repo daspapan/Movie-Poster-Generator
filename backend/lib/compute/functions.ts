@@ -93,13 +93,14 @@ export function createFunctions(scope: Construct, props: CreateFunctionsProps){
         timeout: Duration.minutes(3),
         entry: path.join(
             __dirname,
-            './func/gen-poster/index.ts'
+            './func/gen-poster/poster.ts'
         ),
         environment: {
             APP_NAME: props.appName,
             BEDROCK_REGION: props.awsRegion, 
-            BUCKET_NAME: props.posterBucket.bucketName
-        }
+            BUCKET_NAME: props.imgUploadBucket.bucketName
+        },
+        role: props.lambdaRole
     })
     
     // props.posterBucket.grantPut(genPosterFunc)

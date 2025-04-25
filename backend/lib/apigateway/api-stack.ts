@@ -38,7 +38,14 @@ export function createAPIGateway(scope: Construct, props: APIGatewayProps) {
     pingResource.addMethod('GET', props.pingLambdaIntegration);
 
     const generateResource = api.root.addResource('generate')
-    generateResource.addMethod('POST', props.generatePosterLambdaIntegration)
+    generateResource.addMethod('POST', props.generatePosterLambdaIntegration, {
+        methodResponses: [{statusCode: '200'}],
+        requestParameters: {
+            'method.request.header.Origin': true,
+            'method.request.header.Access-Control-Request-Method': true,
+            'method.request.header.Access-Control-Request-Headers': true,
+        }
+    })
 
     const imgUploadResource = api.root.addResource('images');
     const upload = imgUploadResource.addResource('upload')
