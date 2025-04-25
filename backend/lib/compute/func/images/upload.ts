@@ -12,7 +12,7 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     console.log(JSON.parse(event.body || '{}'))
 
     const body = JSON.parse(event.body || '{}');
-    const { filename, fileContentBase64 } = body;
+    const { filename, fileContentBase64, filetype } = body;
 
     
     if (!filename || !fileContentBase64) {
@@ -23,17 +23,25 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     // console.log("fileContentBase64", fileContentBase64)
 
     const buffer = Buffer.from(fileContentBase64, 'base64');
-    const key = `uploads/${uuidv4()}_${filename.toLowerCase()}`
+    const key = `${uuidv4()}_${filename.toLowerCase()}`
 
     await s3.putObject({
         Bucket: bucketName,
-        Key: filename,
+        Key: `uploads/${key}`,
         Body: buffer,
-        ContentType: 'application/octet-stream'
+        ContentType: `${filetype}`
     }).promise();
 
     return {
         statusCode: 200,
-        body: JSON.stringify({ message: 'Upload successful', filename })
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type',
+        },
+        body: JSON.stringify({
+            message: 'Upload successful', 
+            filename: key
+        })
     };
 };

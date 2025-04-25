@@ -20,12 +20,17 @@ export const handler: APIGatewayProxyHandler = async (event) => {
     
     const url = s3Presign.getSignedUrl('getObject', {
         Bucket: bucketPresign,
-        Key: filename,
+        Key: `uploads/${filename}`,
         Expires: 60 * 5 // 5 minutes
     });
 
     return {
         statusCode: 200,
+        headers: {
+            'Access-Control-Allow-Origin': '*',
+            'Access-Control-Allow-Methods': 'POST, GET, OPTIONS',
+            'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+        },
         body: JSON.stringify({ url })
     };
 };

@@ -10,7 +10,7 @@
     "test": "jest",
     "cdk": "cdk",
     "synth": "cdk synth",
-    "deploy": "cdk synth && cdk deploy --require-approval never --all --outputs-file cdk-outputs.json",
+    "deploy": "cdk synth && cdk deploy --require-approval never --all --outputs-file ../frontend/cdk-outputs.json",
     "destroy": "cdk destroy --require-approval never --all"
   },
   "devDependencies": {

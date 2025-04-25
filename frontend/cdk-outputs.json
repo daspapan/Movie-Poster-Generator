@@ -1,0 +1,7 @@
+{
+  "MPG-Prod-Stack": {
+    "BucketName": "mpg-prod-stack-mpgprodmediabucket64573165-gsguxec5mufd",
+    "ApiUrl": "https://j0nvpqan9e.execute-api.ap-south-1.amazonaws.com/prod/",
+    "MPGProdAPIEndpointB54F2181": "https://j0nvpqan9e.execute-api.ap-south-1.amazonaws.com/prod/"
+  }
+}
