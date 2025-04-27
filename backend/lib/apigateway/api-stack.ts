@@ -8,6 +8,7 @@ type APIGatewayProps = {
     stageName: string;
     pingLambdaIntegration: LambdaIntegration;
     generatePosterLambdaIntegration: LambdaIntegration;
+    generateSummeryLambdaIntegration: LambdaIntegration;
     imageUploadHandlerLambdaIntegration: LambdaIntegration;
     imagePreSignHandlerLambdaIntegration: LambdaIntegration;
 }
@@ -37,8 +38,10 @@ export function createAPIGateway(scope: Construct, props: APIGatewayProps) {
     const pingResource = api.root.addResource('ping')
     pingResource.addMethod('GET', props.pingLambdaIntegration);
 
+
     const generateResource = api.root.addResource('generate')
-    generateResource.addMethod('POST', props.generatePosterLambdaIntegration, {
+    const posterResource = generateResource.addResource('poster')
+    posterResource.addMethod('POST', props.generatePosterLambdaIntegration, {
         methodResponses: [{statusCode: '200'}],
         requestParameters: {
             'method.request.header.Origin': true,
@@ -46,6 +49,16 @@ export function createAPIGateway(scope: Construct, props: APIGatewayProps) {
             'method.request.header.Access-Control-Request-Headers': true,
         }
     })
+    const summeryResource = generateResource.addResource('summery')
+    summeryResource.addMethod('POST', props.generateSummeryLambdaIntegration, {
+        methodResponses: [{statusCode: '200'}],
+        requestParameters: {
+            'method.request.header.Origin': true,
+            'method.request.header.Access-Control-Request-Method': true,
+            'method.request.header.Access-Control-Request-Headers': true,
+        }
+    })
+
 
     const imgUploadResource = api.root.addResource('images');
     const upload = imgUploadResource.addResource('upload')

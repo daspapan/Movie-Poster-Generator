@@ -6,34 +6,57 @@ const output = cdkOutput[`MPG-Prod-Stack`]
 console.log("[API-URL]",output.ApiUrl)
 
 type PosterGenReqParams = {
-    title: string;
+    title?: string;
     description: string;
 };
 
 type PosterGenResParams = {
+    success: boolean;
     message: string; 
-    posterUrl: string;
+    posterUrl?: string | null;
 }
 
-export async function handlePosterGenerator({title, description}:PosterGenReqParams): Promise<PosterGenResParams> {
+export async function handlePosterGenerator({description}:PosterGenReqParams): Promise<PosterGenResParams> {
 
     try {
+        // console.log('Just Showing Title: ', title);
 
-        const response = await axios.post(`${output.ApiUrl}generate`, {
-            title, description
+        const response = await axios.post(`${output.ApiUrl}generate/poster`, {
+            prompt: description
         },{
             headers: {
                 'Content-Type': 'application/json',
             },
         })
+
+        console.log("Response", response)
     
         return {
+            success: true,
             message: response.data.message,
             posterUrl: response.data.posterUrl
         }
         
-    } catch (error) {
-        throw error
+    } catch (error: unknown) {
+        // throw error
+        console.error(error);
+
+        if(axios.isAxiosError(error)){
+            return {
+                success: false,
+                message: `Error ${error.response?.data.message || 'Something when wrong.'}`,
+                posterUrl: null
+            }
+        }else{
+            return {
+                success: false,
+                message: error as string,
+                posterUrl: null
+            }
+
+        }
+
+        
     }
 }
 

@@ -4,7 +4,7 @@ import Image from 'next/image';
 import React from 'react'
 
 interface PosterDisplayProps {
-    imageUrl: string | null;
+    imageUrl: string;
 }
 
 const PosterDisplay = ({imageUrl}:PosterDisplayProps) => {
@@ -13,7 +13,7 @@ const PosterDisplay = ({imageUrl}:PosterDisplayProps) => {
 
     return (
         <div className='mt-6 text-center'>
-            <h2 className='text-lg font-semibold mb-2'>Generated Image</h2>
+            <h2 className='text-lg font-semibold mb-2'>Generated Poster</h2>
             <Image
                 src={imageUrl}
                 alt='Generated Poster'

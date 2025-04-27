@@ -6,6 +6,7 @@ import { createAuth } from './auth/cognito';
 import { createFunctions } from './compute/functions';
 import { createAPIGateway } from './apigateway/api-stack';
 import { LambdaIntegration } from 'aws-cdk-lib/aws-apigateway';
+import { createGuardrail } from './AI/guardrail';
 
 
 export class BackendStack extends cdk.Stack {
@@ -33,6 +34,10 @@ export class BackendStack extends cdk.Stack {
             appName: appName,
         })
 
+        const guardrail = createGuardrail(this, {
+            appName: appName
+        })
+
 
         // NodejsFunction & LambdaFunction
         const computeStack = createFunctions(this, {
@@ -41,7 +46,8 @@ export class BackendStack extends cdk.Stack {
             awsRegion: context.env.region,
             posterBucket: uploadBucket.mediaBucket,
             imgUploadBucket: uploadBucket.mediaBucket,
-            lambdaRole: uploadBucket.lambdaRole
+            lambdaRole: uploadBucket.lambdaRole,
+            guardrail: guardrail,
         }); 
 
 
@@ -50,6 +56,7 @@ export class BackendStack extends cdk.Stack {
             stageName: context.stage,
             pingLambdaIntegration: new LambdaIntegration(computeStack.pingFunc),
             generatePosterLambdaIntegration: new LambdaIntegration(computeStack.genPosterFunc),
+            generateSummeryLambdaIntegration: new LambdaIntegration(computeStack.genSummeryFunc),
             imageUploadHandlerLambdaIntegration: new LambdaIntegration(computeStack.imageUploadFunc),
             imagePreSignHandlerLambdaIntegration: new LambdaIntegration(computeStack.imagePreSignFunc)
         })

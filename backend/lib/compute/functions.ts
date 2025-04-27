@@ -2,6 +2,7 @@ import { Runtime, Code } from 'aws-cdk-lib/aws-lambda';
 import { NodejsFunction } from 'aws-cdk-lib/aws-lambda-nodejs';
 import { Construct } from 'constructs';
 import * as logs from 'aws-cdk-lib/aws-logs'
+import * as bedrock from 'aws-cdk-lib/aws-bedrock';
 // const path = require('path');
 import path from 'path';
 import { Duration, RemovalPolicy } from 'aws-cdk-lib';
@@ -15,6 +16,7 @@ type CreateFunctionsProps = {
     posterBucket: Bucket;
     imgUploadBucket: Bucket;
     lambdaRole: iam.Role;
+    guardrail: bedrock.CfnGuardrail;
 }
 
 
@@ -98,25 +100,64 @@ export function createFunctions(scope: Construct, props: CreateFunctionsProps){
         environment: {
             APP_NAME: props.appName,
             BEDROCK_REGION: props.awsRegion, 
-            BUCKET_NAME: props.imgUploadBucket.bucketName
+            BUCKET_NAME: props.imgUploadBucket.bucketName,
+            GUARDRAIL_IDENTIFIER: props.guardrail.attrGuardrailArn,
         },
         role: props.lambdaRole
     })
-    
-    // props.posterBucket.grantPut(genPosterFunc)
-    // props.posterBucket.grantWrite(genPosterFunc)
-    // props.posterBucket.grantRead(genPosterFunc)
 
     genPosterFunc.addToRolePolicy(new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
         actions: [
             'bedrock:*',
             's3:*'
         ],
         resources: [
             props.posterBucket.bucketArn as string,
-            "*"
+            props.guardrail.attrGuardrailArn as string,
+            '*'
         ]
     })) 
+    /* genPosterFunc.addToRolePolicy(new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+            'bedrock:InvokeModel',
+        ],
+        resources: [
+            bedrock.FoundationModel.fromFoundationModelId(scope, 'AmazonModel', bedrock.FoundationModelIdentifier.AMAZON_TITAN_IMAGE_GENERATOR_V1_0).modelArn,
+        ]
+    })) */
+
+
+    // aws logs tail /aws/lambda/MPG-Prod-GenSummeryFunc --follow
+    const genSummeryFunc = new NodejsFunction(scope, `${props.appName}-GenSummeryFunc`, {
+        functionName: `${props.appName}-GenSummeryFunc`,
+        runtime: Runtime.NODEJS_18_X,
+        handler: "handler",
+        timeout: Duration.minutes(3),
+        entry: path.join(
+            __dirname,
+            './func/gen-summery/summery.ts'
+        ),
+        environment: {
+            APP_NAME: props.appName,
+            BEDROCK_REGION: props.awsRegion, 
+            BUCKET_NAME: props.imgUploadBucket.bucketName,
+            GUARDRAIL_IDENTIFIER: props.guardrail.attrGuardrailArn,
+        }
+    })
+    genSummeryFunc.addToRolePolicy(new iam.PolicyStatement({
+        effect: iam.Effect.ALLOW,
+        actions: [
+            'bedrock:InvokeModel',
+            'bedrock:ApplyGuardrail',
+        ],
+        resources: [
+            bedrock.FoundationModel.fromFoundationModelId(scope, 'AmazonModel', bedrock.FoundationModelIdentifier.META_LLAMA_3_8B_INSTRUCT_V1).modelArn,
+            props.guardrail.attrGuardrailArn as string,
+        ]
+    })) 
+
 
     new logs.LogGroup(scope, `${props.appName}-log-group`, {
         logGroupName: `/aws/lambda/${props.appName}-${props.stageName}`,
@@ -124,6 +165,6 @@ export function createFunctions(scope: Construct, props: CreateFunctionsProps){
         removalPolicy: RemovalPolicy.DESTROY
     })
 
-    return { pingFunc, imageUploadFunc, imagePreSignFunc, genPosterFunc }
+    return { pingFunc, imageUploadFunc, imagePreSignFunc, genPosterFunc, genSummeryFunc }
 
 }
