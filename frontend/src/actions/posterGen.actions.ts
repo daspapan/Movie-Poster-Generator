@@ -13,6 +13,7 @@ type PosterGenReqParams = {
 type PosterGenResParams = {
     success: boolean;
     message: string; 
+    response?: object;
     posterUrl?: string | null;
 }
 
@@ -35,6 +36,51 @@ export async function handlePosterGenerator({description}:PosterGenReqParams): P
             success: true,
             message: response.data.message,
             posterUrl: response.data.posterUrl
+        }
+        
+    } catch (error: unknown) {
+        // throw error
+        console.error(error);
+
+        if(axios.isAxiosError(error)){
+            return {
+                success: false,
+                message: `Error ${error.response?.data.message || 'Something when wrong.'}`,
+                posterUrl: null
+            }
+        }else{
+            return {
+                success: false,
+                message: error as string,
+                posterUrl: null
+            }
+
+        }
+
+        
+    }
+}
+
+
+export async function handleSummeryGenerator({description}:PosterGenReqParams): Promise<PosterGenResParams> {
+
+    try {
+        // console.log('Just Showing Title: ', title);
+
+        const response = await axios.post(`${output.ApiUrl}generate/summery`, {
+            prompt: description
+        },{
+            headers: {
+                'Content-Type': 'application/json',
+            },
+        })
+
+        console.log("Response", response)
+    
+        return {
+            success: true,
+            message: response.data.message,
+            response: response.data.response
         }
         
     } catch (error: unknown) {

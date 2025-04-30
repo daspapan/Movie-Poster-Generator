@@ -1,53 +1,43 @@
 "use client"
 
-import { handlePosterGenerator } from '@/actions/posterGen.actions';
-import PosterDisplay from '@/components/poster/PosterDisplay';
+import { handleSummeryGenerator } from '@/actions/posterGen.actions';
+
 import PosterForm from '@/components/poster/PosterForm';
 import React, { useState } from 'react';
 
 const PosterPage = () => {
 
-    const [ posterUrl, setPosterUrl ] = useState<string | null>(null)
+    const [summery, setSummery ] = useState<string | null>(null)
     const [error, setError] = useState<string>("");
     const [isSubmitted, setIsSubmitted] = useState<boolean>(false)
 
     const generatePoster = async (description: string) => {
-        const posterResponse = await handlePosterGenerator({description})
-
-        /* console.log("Clicked!!!")
-        await new Promise(r => setTimeout(r, 5000));
-        const posterResponse = {
-            success: false,
-            message: "It's testing",
-            description,
-            posterUrl,
-        } */
-
-        // console.log(posterResponse)
-        if(posterResponse.success){
+        const summeryResponse = await handleSummeryGenerator({description})
+        
+        if(summeryResponse.success){
             setError("")
-            setPosterUrl(posterResponse.posterUrl || null) // .data.posterUrl
+            setSummery(JSON.stringify(summeryResponse.response))
         }else{
-            setPosterUrl(null)
-            setError(posterResponse.message)
+            setSummery(null)
+            setError(summeryResponse.message)
         }
 
         setIsSubmitted(false)
-    }
 
+    }
 
     return (
         <div className='min-h-screen p-6 bg-gray-100' >
             <div className='max-w-xl mx-auto'>
                 <PosterForm 
-                    title="image"
+                    title="text"
                     isSubmitted={`${isSubmitted}`}
                     setIsSubmitted={setIsSubmitted}
                     onGenerate={generatePoster}
                 />
 
-                <PosterDisplay imageUrl={posterUrl} />
-
+                {summery && (<p>{summery}</p>)}
+                
                 {error && 
                     (<div className='mt-6 text-center'>
                         <h4 className='text-lg font-semibold mb-2 text-red-500'>{error}</h4>

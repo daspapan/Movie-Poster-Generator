@@ -32,11 +32,13 @@ export function createAPIGateway(scope: Construct, props: APIGatewayProps) {
         // apiKeySourceType: ApiKeySourceType.HEADER  
     });
 
-    const apiKey = ""; //new ApiKey(scope, `${props.appName}-ApiKey`)
+    const apiKey = new ApiKey(scope, `${props.appName}-ApiKey`)
 
 
     const pingResource = api.root.addResource('ping')
-    pingResource.addMethod('GET', props.pingLambdaIntegration);
+    pingResource.addMethod('GET', props.pingLambdaIntegration, {
+        apiKeyRequired: true
+    });
 
 
     const generateResource = api.root.addResource('generate')
@@ -85,30 +87,3 @@ export function createAPIGateway(scope: Construct, props: APIGatewayProps) {
     return {api, apiKey}
     
 }
-
-function addCorsOptions(apiResource: IResource) {
-    apiResource.addMethod('OPTIONS', new MockIntegration({
-        integrationResponses: [{
-            statusCode: '200',
-            responseParameters: {
-                'method.response.header.Access-Control-Allow-Headers': "'*'",
-                'method.response.header.Access-Control-Allow-Origin': "'*'",
-                'method.response.header.Access-Control-Allow-Methods': "'GET,POST,OPTIONS'"
-            }
-        }],
-        passthroughBehavior: PassthroughBehavior.NEVER,
-        requestTemplates: {
-            "application/json": "{\"statusCode\": 200}"
-        }
-}), {
-        methodResponses: [{
-            statusCode: '200',
-            responseParameters: {
-            'method.response.header.Access-Control-Allow-Headers': true,
-            'method.response.header.Access-Control-Allow-Methods': true,
-            'method.response.header.Access-Control-Allow-Origin': true,
-            }
-        }]
-    });
-}
-  

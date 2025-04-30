@@ -66,7 +66,8 @@ export class BackendStack extends cdk.Stack {
         new cdk.CfnOutput(this, 'BucketName', {value: uploadBucket.mediaBucket.bucketName})
         // API Endpoint
         new cdk.CfnOutput(this, 'ApiUrl', {value: api.api.url})
-        // new cdk.CfnOutput(this, 'ApiKeyId', {value: api.apiKey.keyId})
+        new cdk.CfnOutput(this, 'ApiKeyId', {value: api.apiKey.keyId})
+
 
 
     }
